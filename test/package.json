@@ -14,7 +14,6 @@
     "@bedrock/express": "^8.0.0",
     "@bedrock/karma": "^7.0.1",
     "@bedrock/quasar": "^10.0.0",
-    "@bedrock/quasar-components": "^5.0.0",
     "@bedrock/server": "^5.0.0",
     "@bedrock/test": "^8.0.5",
     "@bedrock/views": "^11.0.0",
