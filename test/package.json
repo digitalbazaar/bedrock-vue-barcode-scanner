@@ -1,31 +1,33 @@
 {
-  "name": "bedrock-module-template-http-test",
+  "name": "bedrock-vue-barcode-scanner",
   "version": "0.0.1-0",
+  "type": "module",
   "private": true,
   "scripts": {
-    "test": "node --preserve-symlinks test.js test",
-    "coverage": "cross-env NODE_ENV=test nyc --reporter=lcov --reporter=text-summary npm test",
-    "coverage-ci": "cross-env NODE_ENV=test nyc --reporter=lcovonly npm test",
-    "coverage-report": "nyc report"
+    "debug": "node --preserve-symlinks test.js test --framework karma --log-level debug",
+    "test": "node --preserve-symlinks test.js test --framework karma",
+    "coverage": "node --preserve-symlinks test.js test --framework karma-coverage",
+    "coverage-ci": "node --preserve-symlinks test.js test --framework karma-coverage-ci"
   },
   "dependencies": {
-    "bedrock": "^4.1.1",
-    "bedrock-express": "^3.2.0",
-    "bedrock-https-agent": "^2.0.0",
-    "bedrock-module-template-http": "file:..",
-    "bedrock-mongodb": "^8.2.0",
-    "bedrock-server": "^2.7.0",
-    "bedrock-test": "^5.3.2",
-    "cross-env": "^7.0.3",
-    "nyc": "^15.1.0"
-  },
-  "nyc": {
-    "excludeNodeModules": false,
-    "include": [
-      "node_modules/bedrock-module-template-http/**"
-    ],
-    "exclude": [
-      "node_modules/bedrock-module-template-http/node_modules/**"
-    ]
+    "@bedrock/core": "^6.0.1",
+    "@bedrock/express": "^8.0.0",
+    "@bedrock/karma": "^7.0.1",
+    "@bedrock/quasar": "^10.0.0",
+    "@bedrock/quasar-components": "^5.0.0",
+    "@bedrock/server": "^5.0.0",
+    "@bedrock/test": "^8.0.5",
+    "@bedrock/views": "^11.0.0",
+    "@bedrock/vue": "^5.0.1",
+    "@bedrock/vue-barcode-scanner": "file:..",
+    "@bedrock/web": "^3.0.0",
+    "@bedrock/web-fontawesome": "^2.0.0",
+    "@bedrock/webpack": "^9.0.0",
+    "@digitalbazaar/vue-extendable-event": "^4.1.0",
+    "@vuelidate/core": "^2.0.3",
+    "@vuelidate/validators": "^2.0.4",
+    "@vueuse/core": "^10.9.0",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
   }
 }

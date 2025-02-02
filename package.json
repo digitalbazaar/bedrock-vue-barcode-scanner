@@ -1,17 +1,47 @@
 {
-  "name": "bedrock-module-template-http",
+  "name": "@bedrock/vue-barcode-scanner",
   "version": "0.0.1-0",
-  "description": "Bedrock HTTP API",
-  "main": "./lib",
+  "type": "module",
+  "description": "Barcode scanner Vue components for bedrock apps",
+  "exports": {
+    ".": "./lib/index.js",
+    "./components/": "./components/"
+  },
+  "files": [
+    "components/*",
+    "lib/*"
+  ],
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint --ext .cjs,.js,.vue ."
+  },
+  "dependencies": {
+    "html5-qrcode": "^2.3.8"
+  },
+  "peerDependencies": {
+    "@bedrock/quasar": "^10.0.0",
+    "@bedrock/quasar-components": "^5.0.0",
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-digitalbazaar": "^5.0.1",
+    "eslint-plugin-jsdoc": "^50.4.1",
+    "eslint-plugin-quasar": "^1.1.0",
+    "eslint-plugin-vue": "^9.23.0",
+    "jsdoc": "^4.0.2",
+    "jsdoc-to-markdown": "^9.0.2"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/digitalbazaar/bedrock-module-template-http"
+    "url": "https://github.com/digitalbazaar/bedrock-vue-barcode-scanner"
   },
   "keywords": [
-    "bedrock"
+    "bedrock",
+    "barcode",
+    "barcode scanner"
   ],
   "author": {
     "name": "Digital Bazaar, Inc.",
@@ -19,24 +49,7 @@
     "url": "https://digitalbazaar.com"
   },
   "bugs": {
-    "url": "https://github.com/digitalbazaar/bedrock-module-template-http/issues"
+    "url": "https://github.com/digitalbazaar/bedrock-vue-barcode-scanner/issues"
   },
-  "homepage": "https://github.com/digitalbazaar/bedrock-module-template-http",
-  "dependencies": {
-    "esm": "^3.2.25"
-  },
-  "peerDependencies": {
-    "bedrock": "^4.1.1",
-    "bedrock-express": "^3.2.0"
-  },
-  "directories": {
-    "lib": "./lib"
-  },
-  "devDependencies": {
-    "eslint": "^7.14.0",
-    "eslint-config-digitalbazaar": "^2.6.1"
-  },
-  "engines": {
-    "node": ">=12"
-  }
+  "homepage": "https://github.com/digitalbazaar/bedrock-vue-barcode-scanner"
 }

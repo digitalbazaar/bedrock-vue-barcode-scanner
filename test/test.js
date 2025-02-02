@@ -1,12 +1,11 @@
-/*
- * Copyright (c) 2021 Digital Bazaar, Inc. All rights reserved.
+/*!
+ * Copyright (c) 2022-2025 Digital Bazaar, Inc. All rights reserved.
  */
-'use strict';
+import * as bedrock from '@bedrock/core';
+import '@bedrock/views';
+import '@bedrock/webpack';
 
-const bedrock = require('bedrock');
-require('bedrock-https-agent');
-require('bedrock-mongodb');
-require('bedrock-module-template-http');
+import '@bedrock/test';
+import '@bedrock/karma';
 
-require('bedrock-test');
 bedrock.start();

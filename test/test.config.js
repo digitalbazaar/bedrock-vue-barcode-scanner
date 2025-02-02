@@ -1,17 +1,25 @@
-/*
- * Copyright (c) 2021 Digital Bazaar, Inc. All rights reserved.
+/*!
+ * Copyright (c) 2024-2025 Digital Bazaar, Inc. All rights reserved.
  */
-'use strict';
+import {config} from '@bedrock/core';
+import {fileURLToPath} from 'url';
+import path from 'path';
+import '@bedrock/karma';
 
-const {config} = require('bedrock');
-const path = require('path');
-
-// MongoDB
-config.mongodb.name = 'bedrock_module_template_http_test';
-config.mongodb.dropCollections.onInit = true;
-config.mongodb.dropCollections.collections = [];
-
-config.mocha.tests.push(path.join(__dirname, 'mocha'));
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // allow self-signed certs in test framework
 config['https-agent'].rejectUnauthorized = false;
+
+config.karma.suites['bedrock-vue-barcode-scanner'] =
+  path.join('web', '**', '*.js');
+config.karma.config.proxies = {
+  '/': 'https://localhost:18443'
+};
+config.karma.config.proxyValidateSSL = false;
+config.karma.config.webpack.resolve = {
+  modules: [
+    path.resolve(__dirname, '..', 'node_modules'),
+    path.resolve(__dirname, 'node_modules')
+  ]
+};
