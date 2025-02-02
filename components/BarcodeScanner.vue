@@ -66,10 +66,9 @@ export default {
       cameraList.value = availableCameras.map(c => {
         return {deviceId: c.id, label: c.label};
       });
-      /**
-       * Select last camera in list in to default
-       * to back facing non-fish eye camera
-       */
+
+      // select last camera in list to attempt to default to a back-facing,
+      // non-fish-eye camera
       const defaultCameraId = cameraList.value.at(-1).deviceId;
       await scanner.start(
         selectedCameraId.value ?? defaultCameraId,
