@@ -1,0 +1,33 @@
+{
+  "name": "bedrock-vue-barcode-scanner",
+  "version": "0.0.1-0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "debug": "node --preserve-symlinks test.js test --framework karma --log-level debug",
+    "test": "node --preserve-symlinks test.js test --framework karma",
+    "coverage": "node --preserve-symlinks test.js test --framework karma-coverage",
+    "coverage-ci": "node --preserve-symlinks test.js test --framework karma-coverage-ci"
+  },
+  "dependencies": {
+    "@bedrock/core": "^6.0.1",
+    "@bedrock/express": "^8.0.0",
+    "@bedrock/karma": "^7.0.1",
+    "@bedrock/quasar": "^10.0.0",
+    "@bedrock/quasar-components": "^5.0.0",
+    "@bedrock/server": "^5.0.0",
+    "@bedrock/test": "^8.0.5",
+    "@bedrock/views": "^11.0.0",
+    "@bedrock/vue": "^5.0.1",
+    "@bedrock/vue-barcode-scanner": "file:..",
+    "@bedrock/web": "^3.0.0",
+    "@bedrock/web-fontawesome": "^2.0.0",
+    "@bedrock/webpack": "^9.0.0",
+    "@digitalbazaar/vue-extendable-event": "^4.1.0",
+    "@vuelidate/core": "^2.0.3",
+    "@vuelidate/validators": "^2.0.4",
+    "@vueuse/core": "^10.9.0",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
+  }
+}
