@@ -13,7 +13,7 @@
 
 <script>
 /*!
- * Copyright (c) 2024 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2024-2025 Digital Bazaar, Inc. All rights reserved.
  */
 import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats}
   from 'html5-qrcode';
@@ -26,7 +26,7 @@ export default {
   props: {
     formatsToSupport: {
       type: Array,
-      default: () => [Html5QrcodeSupportedFormats.QR_CODE]
+      default: () => ['qr_code']
     },
     tipText: {
       type: String,
@@ -53,10 +53,12 @@ export default {
 
     // Lifecycle hooks
     onMounted(async () => {
+      // map formats from Web standard to `Html5QrcodeSupportedFormats`
+
       scanner = new Html5Qrcode(
         'dce-video-container', {
           fps: 60,
-          formatsToSupport,
+          formatsToSupport: _mapFormats(formatsToSupport),
           useBarCodeDetectorIfSupported: true,
         }
       );
@@ -196,4 +198,43 @@ export default {
     };
   }
 };
+
+// see: `BarcodeFormat`
+// https://wicg.github.io/shape-detection-api/#enumdef-barcodeformat
+const FORMAT_MAP = new Map([
+  ['aztec', Html5QrcodeSupportedFormats.AZTEC],
+  ['code_128', Html5QrcodeSupportedFormats.CODE_128],
+  ['code_39', Html5QrcodeSupportedFormats.CODE_39],
+  ['code_93', Html5QrcodeSupportedFormats.CODE_93],
+  ['codabar', Html5QrcodeSupportedFormats.CODABAR],
+  ['data_matrix', Html5QrcodeSupportedFormats.DATA_MATRIX],
+  ['ean_13', Html5QrcodeSupportedFormats.EAN_13],
+  ['ean_8', Html5QrcodeSupportedFormats.EAN_8],
+  ['itf', Html5QrcodeSupportedFormats.ITF],
+  ['pdf417', Html5QrcodeSupportedFormats.PDF_417],
+  ['qr_code', Html5QrcodeSupportedFormats.QR_CODE],
+  ['upc_a', Html5QrcodeSupportedFormats.UPC_A],
+  ['upc_e', Html5QrcodeSupportedFormats.UPC_E]
+]);
+
+// map from Web-native format to `Html5QrcodeSupportedFormats`
+function _mapFormats(formats) {
+  console.log('formats', formats);
+  return formats.map(format => {
+    const result = FORMAT_MAP.get(format);
+    console.log('format', format, 'result', result);
+    if(result === undefined) {
+      if(typeof result !== 'string' ||
+        !isNaN(Number.parseInt(result, 10))) {
+        throw new TypeError(
+          `Unsupported format "${format}"; ` +
+          'a string supported by the "BarcodeFormat" enumeration ' +
+          'must be given, e.g., "qr_code", not a number.');
+      }
+      throw new TypeError(`Unsupported format "${format}".`);
+    }
+    return result;
+  });
+}
+
 </script>

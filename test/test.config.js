@@ -8,9 +8,6 @@ import '@bedrock/karma';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// allow self-signed certs in test framework
-config['https-agent'].rejectUnauthorized = false;
-
 config.karma.suites['bedrock-vue-barcode-scanner'] =
   path.join('web', '**', '*.js');
 config.karma.config.proxies = {
