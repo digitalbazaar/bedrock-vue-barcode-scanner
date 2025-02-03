@@ -218,10 +218,8 @@ const FORMAT_MAP = new Map([
 
 // map from Web-native format to `Html5QrcodeSupportedFormats`
 function _mapFormats(formats) {
-  console.log('formats', formats);
   return formats.map(format => {
     const result = FORMAT_MAP.get(format);
-    console.log('format', format, 'result', result);
     if(result === undefined) {
       if(typeof result !== 'string' ||
         !isNaN(Number.parseInt(result, 10))) {
