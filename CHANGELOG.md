@@ -1,6 +1,6 @@
 # bedrock-vue-barcode-scanner ChangeLog
 
-## 1.0.1 - 2025-mm-dd
+## 1.0.1 - 2025-02-02
 
 ### Fixed
 - Removed debug console logging.
