@@ -31,6 +31,10 @@ export default {
     tipText: {
       type: String,
       default: ''
+    },
+    showQrBox: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['result', 'close'],
@@ -125,31 +129,29 @@ export default {
     }
 
     function getCameraScanConfig() {
-      // Was causing problems for MacOS continuity camera
-      // (box showed up but with 0 height despite height being nonzero
-      // as returned from this function)
-
-      // const videoElement = document.getElementById('dce-video-container');
-      // const aspectRatio =
-      //   formatsToSupport?.[0] == Html5QrcodeSupportedFormats.PDF_417 ?
-      //     1.0 : 1.0;
-      // // The smaller of 90% of the available width or max-height/aspectRatio
-      // const width = Math.round(
-      //   constrainedDimension(
-      //     videoElement.clientWidth * 0.9,
-      //     (videoElement.clientHeight - 90) * aspectRatio
-      //   )
-      // );
-      // const height = Math.round(constrainedDimension(
-      //   videoElement.clientHeight - 90,
-      //   width / aspectRatio,
-      // ));
-      // return {
-      //   qrbox: {width, height}
-      // };
       const aspectRatio = parseFloat((innerHeight / innerWidth).toFixed(3));
       return {
-        aspectRatio
+        aspectRatio,
+        ...(props.showQrBox && {qrbox: qrboxFunction})
+      };
+    }
+
+    /**
+    * A function that takes in the width and height of the video stream
+    * and returns QrDimensions. Viewfinder refers to the video showing
+    * camera stream.
+    *
+    * @param {number} viewfinderWidth - Video screen width.
+    * @param {number} viewfinderHeight - Video screen height.
+    * @returns {object} Qrbox width and height.
+    */
+    function qrboxFunction(viewfinderWidth, viewfinderHeight) {
+      const minEdgePercentage = 0.9; // 90%
+      const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+      const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+      return {
+        width: qrboxSize,
+        height: qrboxSize
       };
     }
 
@@ -175,15 +177,6 @@ export default {
         cameraList.value.find(c => c.deviceId === deviceId).deviceId
       );
     }
-
-    // function constrainedDimension(
-    //   containerDimension, maxDesiredDimension, buffer = 0
-    // ) {
-    //   if(containerDimension > maxDesiredDimension + buffer) {
-    //     return maxDesiredDimension;
-    //   }
-    //   return containerDimension - buffer;
-    // }
 
     return {
       emit,
