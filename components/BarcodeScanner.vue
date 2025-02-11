@@ -71,11 +71,10 @@ export default {
       });
       // Attempt to default to a back-facing, non-fish-eye camera
       // Most often this is the last one in the list of back cameras
-      const backCameras = cameraList.value.filter(camera => {
-        return camera.label.toLowerCase().includes('back');
-      });
+      const backCameras = cameraList.value
+        .filter(camera => camera.label?.toLowerCase().includes('back'));
       const defaultCameraId =
-        backCameras?.at(-1)?.deviceId || cameraList.value?.at(-1)?.deviceId;
+        backCameras.at(-1)?.deviceId ?? cameraList.value.at(-1)?.deviceId;
       await scanner.start(
         selectedCameraId.value ?? defaultCameraId,
         getCameraScanConfig(), onScanSuccess, onError
