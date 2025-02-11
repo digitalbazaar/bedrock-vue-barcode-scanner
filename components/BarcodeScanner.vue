@@ -58,7 +58,6 @@ export default {
     // Lifecycle hooks
     onMounted(async () => {
       // map formats from Web standard to `Html5QrcodeSupportedFormats`
-
       scanner = new Html5Qrcode(
         'dce-video-container', {
           fps: 60,
@@ -70,10 +69,13 @@ export default {
       cameraList.value = availableCameras.map(c => {
         return {deviceId: c.id, label: c.label};
       });
-
-      // select last camera in list to attempt to default to a back-facing,
-      // non-fish-eye camera
-      const defaultCameraId = cameraList.value.at(-1).deviceId;
+      // Attempt to default to a back-facing, non-fish-eye camera
+      // Most often this is the last one in the list of back cameras
+      const backCameras = cameraList.value.filter(camera => {
+        return camera.label.toLowerCase().includes('back');
+      });
+      const defaultCameraId =
+        backCameras?.at(-1)?.deviceId || cameraList.value?.at(-1)?.deviceId;
       await scanner.start(
         selectedCameraId.value ?? defaultCameraId,
         getCameraScanConfig(), onScanSuccess, onError
