@@ -1,6 +1,6 @@
 # bedrock-vue-barcode-scanner ChangeLog
 
-## 1.3.0 - 2025-03-xx
+## 1.3.0 - 2025-03-10
 
 ### Changed
 - Add zoom icons to slider.
