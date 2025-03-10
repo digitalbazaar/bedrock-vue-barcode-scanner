@@ -4,7 +4,9 @@
 
 ### Changed
 - Add zoom icons to slider.
-- Prevent pinch to zoom.
+- Prevent pinch to zoom (since it presently scales the website and
+  not the camera, which can be confusing UX). A future update
+  might add pinch to zoom that scales the camera.
 
 ## 1.2.0 - 2025-03-10
 
