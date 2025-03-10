@@ -56,7 +56,7 @@ export default {
     const cameraConstraints = reactive({
       zoom: {
         min: 1,
-        max: 10,
+        max: 8,
         step: 1
       }
     });
