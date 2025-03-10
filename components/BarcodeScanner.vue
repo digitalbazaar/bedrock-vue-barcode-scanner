@@ -5,6 +5,8 @@
       :camera-list="cameraList"
       :camera-error="cameraError"
       :loading-camera="loadingCamera"
+      :camera-constraints="cameraConstraints"
+      @zoom-update="onZoomChange"
       @close="handleClose"
       @toggle-torch="toggleTorch"
       @update-camera="updateCamera" />
@@ -17,7 +19,7 @@
  */
 import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats}
   from 'html5-qrcode';
-import {inject, onMounted, onUnmounted, ref} from 'vue';
+import {inject, onMounted, onUnmounted, reactive, ref} from 'vue';
 import ScannerUI from './ScannerUI.vue';
 
 export default {
@@ -51,6 +53,13 @@ export default {
     const cameraLight = ref(false);
     const loadingCamera = ref(true);
     const videoContainer = ref(null);
+    const cameraConstraints = reactive({
+      zoom: {
+        min: 1,
+        max: 10,
+        step: 1
+      }
+    });
 
     // Inject
     const {selectedCameraId, updateSelectedCamera} = inject('selectedCameraId');
@@ -87,6 +96,11 @@ export default {
       if(!cameraLight.value) {
         await toggleTorch();
       }
+      await getZoomConstraints();
+      // Set focus mode
+      scanner.applyVideoConstraints({
+        advanced: [{focusMode: 'continuous'}],
+      });
       loadingCamera.value = false;
     });
 
@@ -109,6 +123,25 @@ export default {
       cameraLight.value = !cameraLight.value;
       scanner.applyVideoConstraints({
         advanced: [{torch: cameraLight.value}],
+      });
+    }
+
+    // Extract phone's zoom constraints
+    async function getZoomConstraints() {
+      const video = document.querySelector(`#dce-video-container > video`);
+      const videoTracks = await video.srcObject.getVideoTracks();
+      const {max = 8, min = 1, step = 1} =
+        videoTracks[0]?.getCapabilities().zoom ?? {};
+      // Save constraints to state
+      cameraConstraints.zoom.min = min;
+      cameraConstraints.zoom.max = max;
+      cameraConstraints.zoom.step = step;
+    }
+
+    // Update camera zoom
+    async function onZoomChange(updatedValue) {
+      scanner.applyVideoConstraints({
+        advanced: [{zoom: updatedValue}],
       });
     }
 
@@ -185,9 +218,11 @@ export default {
       cameraError,
       toggleTorch,
       handleClose,
+      onZoomChange,
       updateCamera,
       loadingCamera,
       videoContainer,
+      cameraConstraints,
     };
   }
 };

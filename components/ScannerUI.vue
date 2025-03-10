@@ -1,6 +1,5 @@
 <template>
-  <div
-    class="fixed-full bg-black">
+  <div class="fixed-full bg-black">
     <!-- Loading -->
     <div
       v-if="loadingCamera"
@@ -24,8 +23,7 @@
     <div
       v-if="cameraError"
       class="absolute-top text-center q-mt-xl">
-      <div
-        class="row items-center justify-center">
+      <div class="row items-center justify-center">
         <q-icon
           color="red-12"
           name="fas fa-times"
@@ -58,11 +56,22 @@
       class="q-ma-sm absolute-top-right"
       @click="handleClose" />
 
+    <!-- Zoom slider -->
+    <div
+      class="absolute-bottom q-mx-xl"
+      style="bottom: 100px">
+      <q-slider
+        v-model="zoom"
+        color="white"
+        track-color="white"
+        :min="cameraConstraints.zoom.min"
+        :max="cameraConstraints.zoom.max"
+        :step="cameraConstraints.zoom.step" />
+    </div>
+
     <!-- Bottom buttons -->
     <q-btn-group
-      class="absolute-bottom full-width"
-      style="height: 50px; border-radius: 0;
-        background-color: rgba(31, 41, 55, 0.9);"
+      class="absolute-bottom full-width bottom-buttons"
       spread>
       <!-- Camera Button -->
       <q-btn-dropdown
@@ -108,30 +117,48 @@
 
 <script>
 /*!
- * Copyright (c) 2024 Digital Bazaar, Inc. All rights reserved.
+ * Copyright (c) 2024-2025 Digital Bazaar, Inc. All rights reserved.
  */
+import {ref, watch} from 'vue';
+
 export default {
   name: 'ScannerUI',
   props: {
     tipText: {
       type: String,
-      default: ''
+      default: '',
     },
     cameraList: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     loadingCamera: {
       type: Boolean,
-      default: false
+      default: false,
     },
     cameraError: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
+    cameraConstraints: {
+      type: Object,
+      default: () => ({
+        zoom: {
+          min: 1,
+          max: 8,
+          step: 1,
+        },
+      }),
+    },
   },
-  emits: ['close', 'updateCamera', 'upload', 'toggle-torch'],
+  emits: ['close', 'updateCamera', 'upload', 'toggle-torch', 'zoom-update'],
   setup(_, {emit}) {
+    const zoom = ref(1);
+
+    watch(zoom, updatedValue => {
+      emit('zoom-update', updatedValue);
+    });
+
     const onChangeCamera = async camera => {
       emit('updateCamera', camera.deviceId);
     };
@@ -145,11 +172,12 @@ export default {
     }
 
     return {
+      zoom,
       handleClose,
       onChangeCamera,
-      handleToggleTorch
+      handleToggleTorch,
     };
-  }
+  },
 };
 </script>
 
@@ -157,5 +185,10 @@ export default {
 .tip-text {
   margin-bottom: 50px;
   background-color: rgba(0, 0, 0, 0.7);
+}
+.bottom-buttons {
+  height: 50px;
+  border-radius: 0;
+  background-color: rgba(31, 41, 55, 0.9);
 }
 </style>
