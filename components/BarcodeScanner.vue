@@ -264,3 +264,10 @@ function _mapFormats(formats) {
 }
 
 </script>
+
+<style>
+body {
+  /* Prevents pinch to zoom on iOS & Android */
+  touch-action: none;
+}
+</style>
