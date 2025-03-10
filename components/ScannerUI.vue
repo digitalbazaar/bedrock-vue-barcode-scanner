@@ -57,17 +57,29 @@
       @click="handleClose" />
 
     <!-- Zoom slider -->
-    <div
+    <q-item
       class="absolute-bottom q-mx-xl"
       style="bottom: 100px">
-      <q-slider
-        v-model="zoom"
-        color="white"
-        track-color="white"
-        :min="cameraConstraints.zoom.min"
-        :max="cameraConstraints.zoom.max"
-        :step="cameraConstraints.zoom.step" />
-    </div>
+      <q-item-section side>
+        <q-icon
+          color="white"
+          name="fa fa-search-minus" />
+      </q-item-section>
+      <q-item-section>
+        <q-slider
+          v-model="zoom"
+          color="white"
+          track-color="white"
+          :min="cameraConstraints.zoom.min"
+          :max="cameraConstraints.zoom.max"
+          :step="cameraConstraints.zoom.step" />
+      </q-item-section>
+      <q-item-section side>
+        <q-icon
+          color="white"
+          name="fa fa-search-plus" />
+      </q-item-section>
+    </q-item>
 
     <!-- Bottom buttons -->
     <q-btn-group
