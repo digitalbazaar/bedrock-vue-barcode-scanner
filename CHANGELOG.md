@@ -1,6 +1,6 @@
 # bedrock-vue-barcode-scanner ChangeLog
 
-## 1.2.0 - 2025-03-xx
+## 1.2.0 - 2025-03-10
 
 ### Added
 - Include slider to control camera zoom.
