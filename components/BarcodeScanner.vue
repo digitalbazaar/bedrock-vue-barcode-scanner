@@ -268,6 +268,6 @@ function _mapFormats(formats) {
 <style>
 body {
   /* Prevents pinch to zoom on iOS & Android */
-  touch-action: none;
+  touch-action: pan-y;
 }
 </style>
