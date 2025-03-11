@@ -1,5 +1,10 @@
 # bedrock-vue-barcode-scanner ChangeLog
 
+## 1.3.1 - 2025-03-xx
+
+### Changed
+- Update CSS to enable vertical scrolling.
+
 ## 1.3.0 - 2025-03-10
 
 ### Changed
