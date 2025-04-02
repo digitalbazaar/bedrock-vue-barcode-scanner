@@ -69,7 +69,7 @@ export default {
       // map formats from Web standard to `Html5QrcodeSupportedFormats`
       scanner = new Html5Qrcode(
         'dce-video-container', {
-          fps: 60,
+          fps: 30,
           formatsToSupport: _mapFormats(formatsToSupport),
           useBarCodeDetectorIfSupported: true,
         }
@@ -99,8 +99,14 @@ export default {
       await getZoomConstraints();
       // Set focus mode
       scanner.applyVideoConstraints({
-        advanced: [{focusMode: 'continuous'}],
+        advanced: [
+          {frameRate: 30},
+          {resizeMode: 'none'},
+          {focusMode: 'continuous'},
+        ],
       });
+      // Use Barcode Detection API
+      startBarcodeDetection();
       loadingCamera.value = false;
     });
 
@@ -138,6 +144,44 @@ export default {
       cameraConstraints.zoom.step = step;
     }
 
+    function startBarcodeDetection() {
+      // Get video element
+      const videoElement = document.querySelector(
+        '#dce-video-container > video'
+      );
+      const {BarcodeDetector} = globalThis;
+      // Check if BarcodeDetector is supported
+      if(!BarcodeDetector) {
+        alert('Barcode Detector is not supported in this browser.');
+        return;
+      } else {
+        const barcodeDetector = new BarcodeDetector({formats: ['pdf417']});
+        const detectBarcode = async video => {
+          try {
+            // Detect barcodes in the current video frame
+            const barcodes = await barcodeDetector.detect(video);
+            if(barcodes.length > 0) {
+              barcodes.forEach(barcode => {
+                const {format, rawValue} = barcode;
+                if(format && rawValue) {
+                  console.log('Barcode Detection API:', barcode);
+                  emit('result', {type: format, text: rawValue});
+                }
+              });
+            }
+          } catch(error) {
+            console.error('Barcode detection failed:', error);
+          }
+          // Schedule the next frame check
+          video.requestVideoFrameCallback(() => detectBarcode(video));
+        };
+        // Start the detection loop
+        videoElement.requestVideoFrameCallback(() =>
+          detectBarcode(videoElement)
+        );
+      }
+    }
+
     // Update camera zoom
     async function onZoomChange(updatedValue) {
       scanner.applyVideoConstraints({
@@ -145,17 +189,9 @@ export default {
       });
     }
 
-    function onScanSuccess(decodedText, decodedResult) {
-      const text = decodedText;
-      const type = decodedResult?.result?.format?.formatName;
-      console.log(
-        'BarcodeScanner detected something:',
-        decodedText ? decodedText : '<empty string>'
-      );
-      if(!type || !text) {
-        return;
-      }
-      emit('result', {type, text});
+    // Use Barcode Detection API instead of html5qrcode's logic
+    function onScanSuccess() {
+      return;
     }
 
     function onError(error) {
@@ -262,7 +298,6 @@ function _mapFormats(formats) {
     return result;
   });
 }
-
 </script>
 
 <style>
