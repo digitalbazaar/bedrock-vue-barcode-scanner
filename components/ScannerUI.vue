@@ -132,6 +132,7 @@
  * Copyright (c) 2024-2025 Digital Bazaar, Inc. All rights reserved.
  */
 import {ref, watch} from 'vue';
+import {useQuasar} from 'quasar';
 
 export default {
   name: 'ScannerUI',
@@ -165,7 +166,11 @@ export default {
   },
   emits: ['close', 'updateCamera', 'upload', 'toggle-torch', 'zoom-update'],
   setup(_, {emit}) {
-    const zoom = ref(1);
+    // use functions
+    const $q = useQuasar();
+
+    // Start scanner at zoom level 2 for iOS
+    const zoom = ref($q.platform.is.ios ? 2 : 1);
 
     watch(zoom, updatedValue => {
       emit('zoom-update', updatedValue);
