@@ -166,7 +166,7 @@ export default {
 
     function startBarcodeDetection() {
       // Get video element
-      const videoElement = document.querySelector(
+      const video = document.querySelector(
         '#dce-video-container > video'
       );
       const {BarcodeDetector} = globalThis;
@@ -174,15 +174,14 @@ export default {
       if(!BarcodeDetector) {
         alert('Barcode Detector is not supported in this browser.');
         return;
-      } else {
-        const barcodeDetector = new BarcodeDetector({
-          formats: formatsToSupport
-        });
-        // Start the detection loop
-        videoElement.requestVideoFrameCallback(() =>
-          emitScanResult({barcodeDetector, video: videoElement})
-        );
       }
+      const barcodeDetector = new BarcodeDetector({
+        formats: formatsToSupport
+      });
+        // Start the detection loop
+      video.requestVideoFrameCallback(
+        () => emitScanResult({barcodeDetector, video})
+      );
     }
 
     // Update camera zoom
