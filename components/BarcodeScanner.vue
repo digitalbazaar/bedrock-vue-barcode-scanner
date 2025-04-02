@@ -17,8 +17,8 @@
 /*!
  * Copyright (c) 2024-2025 Digital Bazaar, Inc. All rights reserved.
  */
-import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats}
-  from 'html5-qrcode';
+import {_detectBarcode, _mapFormats} from '../lib/helpers';
+import {Html5Qrcode, Html5QrcodeScannerState} from 'html5-qrcode';
 import {inject, onMounted, onUnmounted, reactive, ref} from 'vue';
 import ScannerUI from './ScannerUI.vue';
 import {useQuasar} from 'quasar';
@@ -152,6 +152,17 @@ export default {
       cameraConstraints.zoom.step = step;
     }
 
+    async function emitScanResult({barcodeDetector, video}) {
+      const result = await _detectBarcode({barcodeDetector, video});
+      if(result?.format && result?.rawValue) {
+        emit('result', {type: result.format, text: result.rawValue});
+      } else {
+        video.requestVideoFrameCallback(() => {
+          emitScanResult({barcodeDetector, video});
+        });
+      }
+    }
+
     function startBarcodeDetection() {
       // Get video element
       const videoElement = document.querySelector(
@@ -163,10 +174,12 @@ export default {
         alert('Barcode Detector is not supported in this browser.');
         return;
       } else {
-        const barcodeDetector = new BarcodeDetector({formats: ['pdf417']});
+        const barcodeDetector = new BarcodeDetector({
+          formats: formatsToSupport
+        });
         // Start the detection loop
         videoElement.requestVideoFrameCallback(() =>
-          detectBarcode(barcodeDetector, videoElement, emit)
+          emitScanResult({barcodeDetector, video: videoElement})
         );
       }
     }
@@ -251,64 +264,6 @@ export default {
     };
   }
 };
-
-async function detectBarcode(barcodeDetector, video, emit) {
-  try {
-    // Detect barcodes in the current video frame
-    const barcodes = await barcodeDetector.detect(video);
-    if(barcodes.length > 0) {
-      barcodes.forEach(barcode => {
-        const {format, rawValue} = barcode;
-        if(format && rawValue) {
-          console.log('Barcode Detection API:', barcode);
-          emit('result', {type: format, text: rawValue});
-        }
-      });
-    }
-  } catch(error) {
-    console.error('Barcode detection failed:', error);
-  }
-  // Schedule the next frame check
-  video.requestVideoFrameCallback(() =>
-    detectBarcode(barcodeDetector, video, emit)
-  );
-}
-
-// see: `BarcodeFormat`
-// https://wicg.github.io/shape-detection-api/#enumdef-barcodeformat
-const FORMAT_MAP = new Map([
-  ['aztec', Html5QrcodeSupportedFormats.AZTEC],
-  ['code_128', Html5QrcodeSupportedFormats.CODE_128],
-  ['code_39', Html5QrcodeSupportedFormats.CODE_39],
-  ['code_93', Html5QrcodeSupportedFormats.CODE_93],
-  ['codabar', Html5QrcodeSupportedFormats.CODABAR],
-  ['data_matrix', Html5QrcodeSupportedFormats.DATA_MATRIX],
-  ['ean_13', Html5QrcodeSupportedFormats.EAN_13],
-  ['ean_8', Html5QrcodeSupportedFormats.EAN_8],
-  ['itf', Html5QrcodeSupportedFormats.ITF],
-  ['pdf417', Html5QrcodeSupportedFormats.PDF_417],
-  ['qr_code', Html5QrcodeSupportedFormats.QR_CODE],
-  ['upc_a', Html5QrcodeSupportedFormats.UPC_A],
-  ['upc_e', Html5QrcodeSupportedFormats.UPC_E]
-]);
-
-// map from Web-native format to `Html5QrcodeSupportedFormats`
-function _mapFormats(formats) {
-  return formats.map(format => {
-    const result = FORMAT_MAP.get(format);
-    if(result === undefined) {
-      if(typeof result !== 'string' ||
-        !isNaN(Number.parseInt(result, 10))) {
-        throw new TypeError(
-          `Unsupported format "${format}"; ` +
-          'a string supported by the "BarcodeFormat" enumeration ' +
-          'must be given, e.g., "qr_code", not a number.');
-      }
-      throw new TypeError(`Unsupported format "${format}".`);
-    }
-    return result;
-  });
-}
 </script>
 
 <style>
