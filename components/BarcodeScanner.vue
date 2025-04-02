@@ -21,6 +21,7 @@ import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats}
   from 'html5-qrcode';
 import {inject, onMounted, onUnmounted, reactive, ref} from 'vue';
 import ScannerUI from './ScannerUI.vue';
+import {useQuasar} from 'quasar';
 
 export default {
   name: 'BarcodeScanner',
@@ -60,6 +61,9 @@ export default {
         step: 1
       }
     });
+
+    // use functions
+    const $q = useQuasar();
 
     // Inject
     const {selectedCameraId, updateSelectedCamera} = inject('selectedCameraId');
@@ -105,6 +109,10 @@ export default {
           {focusMode: 'continuous'},
         ],
       });
+      // Start scanner at zoom level 2 for iOS
+      if($q.platform.is.ios) {
+        onZoomChange(2);
+      }
       // Use Barcode Detection API
       startBarcodeDetection();
       loadingCamera.value = false;
@@ -207,14 +215,14 @@ export default {
     }
 
     /**
-    * A function that takes in the width and height of the video stream
-    * and returns QrDimensions. Viewfinder refers to the video showing
-    * camera stream.
-    *
-    * @param {number} viewfinderWidth - Video screen width.
-    * @param {number} viewfinderHeight - Video screen height.
-    * @returns {object} Qrbox width and height.
-    */
+     * A function that takes in the width and height of the video stream
+     * and returns QrDimensions. Viewfinder refers to the video showing
+     * camera stream.
+     *
+     * @param {number} viewfinderWidth - Video screen width.
+     * @param {number} viewfinderHeight - Video screen height.
+     * @returns {object} Qrbox width and height.
+     */
     function qrboxFunction(viewfinderWidth, viewfinderHeight) {
       const minEdgePercentage = 0.9; // 90%
       const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
