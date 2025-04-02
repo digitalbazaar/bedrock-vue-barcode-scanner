@@ -164,28 +164,9 @@ export default {
         return;
       } else {
         const barcodeDetector = new BarcodeDetector({formats: ['pdf417']});
-        const detectBarcode = async video => {
-          try {
-            // Detect barcodes in the current video frame
-            const barcodes = await barcodeDetector.detect(video);
-            if(barcodes.length > 0) {
-              barcodes.forEach(barcode => {
-                const {format, rawValue} = barcode;
-                if(format && rawValue) {
-                  console.log('Barcode Detection API:', barcode);
-                  emit('result', {type: format, text: rawValue});
-                }
-              });
-            }
-          } catch(error) {
-            console.error('Barcode detection failed:', error);
-          }
-          // Schedule the next frame check
-          video.requestVideoFrameCallback(() => detectBarcode(video));
-        };
         // Start the detection loop
         videoElement.requestVideoFrameCallback(() =>
-          detectBarcode(videoElement)
+          detectBarcode(barcodeDetector, videoElement, emit)
         );
       }
     }
@@ -270,6 +251,28 @@ export default {
     };
   }
 };
+
+async function detectBarcode(barcodeDetector, video, emit) {
+  try {
+    // Detect barcodes in the current video frame
+    const barcodes = await barcodeDetector.detect(video);
+    if(barcodes.length > 0) {
+      barcodes.forEach(barcode => {
+        const {format, rawValue} = barcode;
+        if(format && rawValue) {
+          console.log('Barcode Detection API:', barcode);
+          emit('result', {type: format, text: rawValue});
+        }
+      });
+    }
+  } catch(error) {
+    console.error('Barcode detection failed:', error);
+  }
+  // Schedule the next frame check
+  video.requestVideoFrameCallback(() =>
+    detectBarcode(barcodeDetector, video, emit)
+  );
+}
 
 // see: `BarcodeFormat`
 // https://wicg.github.io/shape-detection-api/#enumdef-barcodeformat
