@@ -1,6 +1,6 @@
 # bedrock-vue-barcode-scanner ChangeLog
 
-## 1.4.0 - 2025-04-xx
+## 1.4.0 - 2025-04-03
 
 ### Changed
 - Use Barcode Detection API to detect barcodes.
