@@ -1,5 +1,12 @@
 # bedrock-vue-barcode-scanner ChangeLog
 
+## 1.5.0 - 2025-04-dd
+
+### Added
+- Add a parallel scan attempt using the HSP (hue, saturation,
+  "perceived brightness") color model when scanning for barcodes in a video
+  frame.
+
 ## 1.4.0 - 2025-04-03
 
 ### Changed
