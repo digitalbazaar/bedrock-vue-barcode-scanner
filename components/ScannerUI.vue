@@ -169,7 +169,7 @@ export default {
     // use functions
     const $q = useQuasar();
 
-    // Start scanner at zoom level 2 for iOS
+    // start scanner at zoom level 2 for iOS
     const zoom = ref($q.platform.is.ios ? 2 : 1);
 
     watch(zoom, updatedValue => {

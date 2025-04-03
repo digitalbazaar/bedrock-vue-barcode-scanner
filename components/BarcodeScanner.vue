@@ -163,11 +163,11 @@ export default {
     }
 
     function startBarcodeDetection() {
-      // Get video element
+      // get video element
       const video = document.querySelector(
         '#dce-video-container > video');
       const {BarcodeDetector} = globalThis;
-      // Check if BarcodeDetector is supported
+      // check if BarcodeDetector is supported
       if(!BarcodeDetector) {
         alert('Barcode Detector is not supported in this browser.');
         return;
@@ -186,7 +186,7 @@ export default {
       });
     }
 
-    // Use Barcode Detection API instead of html5qrcode's logic
+    // use Barcode Detection API instead of html5qrcode's logic
     function onScanSuccess() {
       return;
     }
@@ -288,9 +288,8 @@ export function _mapFormats(formats) {
       if(typeof result !== 'string' || !isNaN(Number.parseInt(result, 10))) {
         throw new TypeError(
           `Unsupported format "${format}"; ` +
-            'a string supported by the "BarcodeFormat" enumeration ' +
-            'must be given, e.g., "qr_code", not a number.'
-        );
+          'a string supported by the "BarcodeFormat" enumeration ' +
+          'must be given, e.g., "qr_code", not a number.');
       }
       throw new TypeError(`Unsupported format "${format}".`);
     }
