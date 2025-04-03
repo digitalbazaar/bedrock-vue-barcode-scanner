@@ -159,16 +159,13 @@ export default {
       const {signal} = abortController;
       const barcodes = await detectBarcodes({barcodeDetector, video, signal});
       const [result] = barcodes;
-      if(result?.format && result?.rawValue) {
-        emit('result', {type: result.format, text: result.rawValue});
-      }
+      emit('result', {type: result.format, text: result.rawValue});
     }
 
     function startBarcodeDetection() {
       // Get video element
       const video = document.querySelector(
-        '#dce-video-container > video'
-      );
+        '#dce-video-container > video');
       const {BarcodeDetector} = globalThis;
       // Check if BarcodeDetector is supported
       if(!BarcodeDetector) {
@@ -178,10 +175,8 @@ export default {
       const barcodeDetector = new BarcodeDetector({
         formats: formatsToSupport
       });
-        // Start the detection loop
-      video.requestVideoFrameCallback(
-        () => emitScanResult({barcodeDetector, video})
-      );
+      // emit the first scanned result
+      emitScanResult({barcodeDetector, video});
     }
 
     // Update camera zoom
