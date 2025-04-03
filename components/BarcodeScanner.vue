@@ -157,9 +157,17 @@ export default {
 
     async function emitScanResult({barcodeDetector, video}) {
       const {signal} = abortController;
-      const barcodes = await detectBarcodes({barcodeDetector, video, signal});
-      const [result] = barcodes;
-      emit('result', {type: result.format, text: result.rawValue});
+      try {
+        const barcodes = await detectBarcodes({barcodeDetector, video, signal});
+        const [result] = barcodes;
+        emit('result', {type: result.format, text: result.rawValue});
+      } catch(e) {
+        // ignore scan cancellation; log errors and close scanner
+        if(e.name !== 'AbortError') {
+          console.error(e);
+          emit('close');
+        }
+      }
     }
 
     function startBarcodeDetection() {
