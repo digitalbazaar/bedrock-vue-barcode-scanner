@@ -40,7 +40,7 @@ export default {
       type: Boolean,
       default: false
     },
-    lightTorch: {
+    torchOn: {
       type: Boolean,
       default: false
     }
@@ -102,8 +102,8 @@ export default {
         const selectedCamera = scanner.getRunningTrackSettings()?.deviceId;
         updateSelectedCamera(selectedCamera);
       }
-      // Turn on torch by default, if requested
-      if(cameraLight.value != props.lightTorch) {
+      // initialize torch state to `torchOn` prop value
+      if(cameraLight.value !== props.torchOn) {
         await toggleTorch();
       }
       await getZoomConstraints();
