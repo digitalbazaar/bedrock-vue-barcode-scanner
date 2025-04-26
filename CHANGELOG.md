@@ -1,5 +1,13 @@
 # bedrock-vue-barcode-scanner ChangeLog
 
+## 1.4.1 - 2025-??-??
+
+### Added
+- Provide property to automatically light torch when initialized.
+
+### Changed
+- Do not light torch by default.
+
 ## 1.4.0 - 2025-04-03
 
 ### Changed

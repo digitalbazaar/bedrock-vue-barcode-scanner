@@ -39,6 +39,10 @@ export default {
     showQrBox: {
       type: Boolean,
       default: false
+    },
+    lightTorch: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['result', 'close'],
@@ -98,8 +102,8 @@ export default {
         const selectedCamera = scanner.getRunningTrackSettings()?.deviceId;
         updateSelectedCamera(selectedCamera);
       }
-      // Default to turning light on
-      if(!cameraLight.value) {
+      // Turn on torch by default, if requested
+      if(cameraLight.value != props.lightTorch) {
         await toggleTorch();
       }
       await getZoomConstraints();
