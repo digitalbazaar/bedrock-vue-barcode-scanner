@@ -36,15 +36,6 @@
       </div>
     </div>
 
-    <!-- Tip Text -->
-    <div
-      v-if="tipText"
-      ref="tipText"
-      class="absolute-bottom tip-text text-white
-      text-center full-width q-py-sm">
-      {{tipText}}
-    </div>
-
     <!-- Close -->
     <q-btn
       flat
@@ -54,12 +45,13 @@
       :color="cameraError ? 'primary' : 'white'"
       icon="fas fa-times"
       class="q-ma-sm absolute-top-right"
+      :style="safeAreaMode ? 'margin-top: 35px' : 'margin-top: 8px'"
       @click="handleClose" />
 
     <!-- Zoom slider -->
     <q-item
       class="absolute-bottom q-mx-xl"
-      style="bottom: 100px">
+      style="bottom: 125px">
       <q-item-section side>
         <q-icon
           color="white"
@@ -81,49 +73,63 @@
       </q-item-section>
     </q-item>
 
-    <!-- Bottom buttons -->
-    <q-btn-group
-      class="absolute-bottom full-width bottom-buttons"
-      spread>
-      <!-- Camera Button -->
-      <q-btn-dropdown
-        flat
-        no-caps
-        text-color="white"
-        icon="fas fa-video"
-        label="Camera Select"
-        style="font-weight: 600"
-        :disabled="loadingCamera">
-        <q-list>
-          <q-item
-            v-for="camera in cameraList"
-            :key="camera.deviceId"
-            v-close-popup
-            clickable
-            @click="onChangeCamera(camera)">
-            <q-item-section>
-              <q-item-label>{{camera.label}}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-btn-dropdown>
-      <q-separator
-        inset
-        vertical
-        color="grey-8" />
+    <!-- Tip Text -->
+    <div
+      v-if="tipText"
+      ref="tipText"
+      class="absolute-bottom tip-text text-white
+      text-center full-width q-py-sm"
+      :style="safeAreaMode ? 'margin-bottom: 90px': 'margin-bottom: 70px'">
+      {{tipText}}
+    </div>
 
-      <!-- Torch -->
-      <q-btn
-        flat
-        no-caps
-        color="white"
-        text-color="white"
-        icon="fas fa-bolt"
-        label="Light On/ Off"
-        style="font-weight: 600"
-        :disabled="loadingCamera"
-        @click="handleToggleTorch" />
-    </q-btn-group>
+    <!-- Bottom buttons -->
+    <div
+      class="full-width absolute-bottom bottom-container"
+      :style="safeAreaMode ? 'height: 90px' : 'height: 70px'">
+      <q-btn-group
+        spread
+        class="button-group full-width shadow-0">
+        <!-- Camera Button -->
+        <q-btn-dropdown
+          flat
+          no-caps
+          text-color="white"
+          icon="fas fa-video"
+          label="Camera Select"
+          style="font-weight: 600"
+          :disabled="loadingCamera">
+          <q-list>
+            <q-item
+              v-for="camera in cameraList"
+              :key="camera.deviceId"
+              v-close-popup
+              clickable
+              @click="onChangeCamera(camera)">
+              <q-item-section>
+                <q-item-label>{{camera.label}}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+        <q-separator
+          inset
+          vertical
+          color="grey-8" />
+
+        <!-- Torch -->
+        <q-btn
+          flat
+          no-caps
+          color="white"
+          text-color="white"
+          icon="fas fa-bolt"
+          label="Light On/ Off"
+          style="font-weight: 600"
+          :disabled="loadingCamera"
+          @click="handleToggleTorch" />
+      </q-btn-group>
+    </div>
   </div>
 </template>
 
@@ -137,6 +143,10 @@ import {useQuasar} from 'quasar';
 export default {
   name: 'ScannerUI',
   props: {
+    safeAreaMode: {
+      type: Boolean,
+      default: false
+    },
     tipText: {
       type: String,
       default: '',
@@ -200,12 +210,17 @@ export default {
 
 <style>
 .tip-text {
-  margin-bottom: 50px;
+  margin-bottom: 90px;
   background-color: rgba(0, 0, 0, 0.7);
 }
-.bottom-buttons {
-  height: 50px;
+.bottom-container {
+  height: 90px;
+  display: flex;
   border-radius: 0;
+  justify-content: flex-start;
   background-color: rgba(31, 41, 55, 0.9);
+}
+.button-group {
+  height: 70px;
 }
 </style>
