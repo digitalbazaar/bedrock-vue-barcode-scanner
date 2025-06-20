@@ -215,9 +215,19 @@ export default {
     }
 
     function getCameraScanConfig() {
-      const aspectRatio = parseFloat((innerHeight / innerWidth).toFixed(3));
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const landscapeAspectRatio = width / height;
+      const portraitAspectRatio = height / width;
       return {
-        aspectRatio,
+        videoConstraints: {
+          facingMode: 'environment',
+          aspectRatio: $q.platform.is.capacitor ?
+            width < 600 ?
+              portraitAspectRatio :
+              landscapeAspectRatio :
+            landscapeAspectRatio,
+        },
         ...(props.showQrBox && {qrbox: qrboxFunction})
       };
     }
@@ -232,7 +242,7 @@ export default {
      * @returns {object} QR box width and height.
      */
     function qrboxFunction(viewfinderWidth, viewfinderHeight) {
-      const minEdgePercentage = 0.9; // 90%
+      const minEdgePercentage = 0.85; // 85%
       const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
       const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
       return {
