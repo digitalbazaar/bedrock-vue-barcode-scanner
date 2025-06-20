@@ -4,6 +4,7 @@
       :tip-text="tipText"
       :camera-list="cameraList"
       :camera-error="cameraError"
+      :safe-area-mode="safeAreaMode"
       :loading-camera="loadingCamera"
       :camera-constraints="cameraConstraints"
       @zoom-update="onZoomChange"
@@ -41,6 +42,10 @@ export default {
       default: false
     },
     torchOn: {
+      type: Boolean,
+      default: false
+    },
+    safeAreaMode: {
       type: Boolean,
       default: false
     }
@@ -224,7 +229,7 @@ export default {
      *
      * @param {number} viewfinderWidth - Video screen width.
      * @param {number} viewfinderHeight - Video screen height.
-     * @returns {object} Qrbox width and height.
+     * @returns {object} QR box width and height.
      */
     function qrboxFunction(viewfinderWidth, viewfinderHeight) {
       const minEdgePercentage = 0.9; // 90%
