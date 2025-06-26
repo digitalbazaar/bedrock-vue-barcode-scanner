@@ -51,7 +51,7 @@
     <!-- Zoom slider -->
     <q-item
       class="absolute-bottom q-mx-xl"
-      style="bottom: 125px">
+      :style="safeAreaMode ? 'bottom: 125px' : 'bottom: 110px'">
       <q-item-section side>
         <q-icon
           color="white"
