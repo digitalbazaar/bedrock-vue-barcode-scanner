@@ -222,11 +222,9 @@ export default {
       return {
         videoConstraints: {
           facingMode: 'environment',
-          aspectRatio: $q.platform.is.capacitor ?
-            width < 600 ?
-              portraitAspectRatio :
-              landscapeAspectRatio :
-            landscapeAspectRatio,
+          aspectRatio: width < height ?
+            portraitAspectRatio :
+            landscapeAspectRatio
         },
         ...(props.showQrBox && {qrbox: qrboxFunction})
       };
@@ -242,7 +240,7 @@ export default {
      * @returns {object} QR box width and height.
      */
     function qrboxFunction(viewfinderWidth, viewfinderHeight) {
-      const minEdgePercentage = 0.85; // 85%
+      const minEdgePercentage = 0.75; // 75%
       const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
       const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
       return {
