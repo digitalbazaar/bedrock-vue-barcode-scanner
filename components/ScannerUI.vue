@@ -42,16 +42,13 @@
       fab
       :ripple="false"
       size="16px"
-      :color="cameraError ? 'primary' : 'white'"
       icon="fas fa-times"
-      class="q-ma-sm absolute-top-right"
-      :style="safeAreaMode ? 'margin-top: 35px' : 'margin-top: 8px'"
+      :color="cameraError ? 'primary' : 'white'"
+      class="q-ma-sm absolute-top-right close-button"
       @click="handleClose" />
 
     <!-- Zoom slider -->
-    <q-item
-      class="absolute-bottom q-mx-xl"
-      :style="safeAreaMode ? 'bottom: 125px' : 'bottom: 110px'">
+    <q-item class="absolute-bottom q-mx-xl zoom-slider">
       <q-item-section side>
         <q-icon
           color="white"
@@ -78,15 +75,12 @@
       v-if="tipText"
       ref="tipText"
       class="absolute-bottom tip-text text-white
-      text-center full-width q-py-sm"
-      :style="safeAreaMode ? 'margin-bottom: 90px': 'margin-bottom: 70px'">
+      text-center full-width q-py-sm">
       {{tipText}}
     </div>
 
     <!-- Bottom buttons -->
-    <div
-      class="full-width absolute-bottom bottom-container"
-      :style="safeAreaMode ? 'height: 90px' : 'height: 70px'">
+    <div class="full-width absolute-bottom bottom-container">
       <q-btn-group
         spread
         class="button-group full-width shadow-0">
@@ -143,10 +137,6 @@ import {useQuasar} from 'quasar';
 export default {
   name: 'ScannerUI',
   props: {
-    safeAreaMode: {
-      type: Boolean,
-      default: false
-    },
     tipText: {
       type: String,
       default: '',
@@ -210,8 +200,9 @@ export default {
 
 <style>
 .tip-text {
-  margin-bottom: 90px;
   background-color: rgba(0, 0, 0, 0.7);
+  /* observe safe area if value is present on mobile device */
+  margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
 }
 .bottom-container {
   height: 90px;
@@ -219,8 +210,15 @@ export default {
   border-radius: 0;
   justify-content: flex-start;
   background-color: rgba(31, 41, 55, 0.9);
+  height: calc(env(safe-area-inset-bottom, 0px) + 70px);
 }
 .button-group {
   height: 70px;
+}
+.close-button {
+  margin-top: calc(env(safe-area-inset-top, 0px) + 8px);
+}
+.zoom-slider {
+  margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
 }
 </style>

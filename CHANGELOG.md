@@ -3,7 +3,7 @@
 ## 1.6.0 - 2025-06-dd
 
 ### Added
-- Include prop to observe safe area for mobile devices.
+- Include safe area CSS property for mobile devices.
 
 ## Changed
 - Update screen aspect ratio for web and mobile.
