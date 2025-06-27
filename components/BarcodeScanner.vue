@@ -4,7 +4,6 @@
       :tip-text="tipText"
       :camera-list="cameraList"
       :camera-error="cameraError"
-      :safe-area-mode="safeAreaMode"
       :loading-camera="loadingCamera"
       :camera-constraints="cameraConstraints"
       @zoom-update="onZoomChange"
@@ -42,10 +41,6 @@ export default {
       default: false
     },
     torchOn: {
-      type: Boolean,
-      default: false
-    },
-    safeAreaMode: {
       type: Boolean,
       default: false
     }
