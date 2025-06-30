@@ -1,6 +1,6 @@
 # bedrock-vue-barcode-scanner ChangeLog
 
-## 1.6.0 - 2025-06-dd
+## 1.6.0 - 2025-06-30
 
 ### Added
 - Include safe area CSS property for mobile devices.
