@@ -95,8 +95,10 @@ export default {
       const defaultCameraId =
         backCameras.at(-1)?.deviceId ?? cameraList.value.at(-1)?.deviceId;
       await scanner.start(
-        selectedCameraId.value ?? defaultCameraId,
-        getCameraScanConfig(), onScanSuccess, onError
+        {deviceId: {exact: selectedCameraId.value ?? defaultCameraId}},
+        getCameraScanConfig(),
+        onScanSuccess,
+        onError
       );
       if(!selectedCameraId.value && cameraList.value.length) {
         const selectedCamera = scanner.getRunningTrackSettings()?.deviceId;
@@ -108,7 +110,7 @@ export default {
       }
       await getZoomConstraints();
       // Set focus mode
-      scanner.applyVideoConstraints({
+      await scanner.applyVideoConstraints({
         advanced: [
           {frameRate: 30},
           {resizeMode: 'none'},
@@ -212,11 +214,12 @@ export default {
     function getCameraScanConfig() {
       const width = window.innerWidth;
       const height = window.innerHeight;
-      const landscapeAspectRatio = width / height;
-      const portraitAspectRatio = height / width;
+      // Must parse float aspect ratio value
+      const landscapeAspectRatio = parseFloat((width / height).toFixed(3));
+      const portraitAspectRatio = parseFloat((height / width).toFixed(3));
       return {
         videoConstraints: {
-          facingMode: 'environment',
+          facingMode: {exact: 'environment'},
           aspectRatio: width < height ?
             portraitAspectRatio :
             landscapeAspectRatio
