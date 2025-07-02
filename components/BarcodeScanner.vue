@@ -98,8 +98,7 @@ export default {
         {deviceId: {exact: selectedCameraId.value ?? defaultCameraId}},
         getCameraScanConfig(),
         onScanSuccess,
-        onError
-      );
+        onError);
       if(!selectedCameraId.value && cameraList.value.length) {
         const selectedCamera = scanner.getRunningTrackSettings()?.deviceId;
         updateSelectedCamera(selectedCamera);
@@ -214,7 +213,7 @@ export default {
     function getCameraScanConfig() {
       const width = window.innerWidth;
       const height = window.innerHeight;
-      // Must parse float aspect ratio value
+      // must parse float aspect ratio value
       const landscapeAspectRatio = parseFloat((width / height).toFixed(3));
       const portraitAspectRatio = parseFloat((height / width).toFixed(3));
       return {
