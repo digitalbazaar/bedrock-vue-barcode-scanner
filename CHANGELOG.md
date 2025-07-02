@@ -1,5 +1,10 @@
 # bedrock-vue-barcode-scanner ChangeLog
 
+## 1.6.1 - 2025-07-dd
+
+### Fixed
+- Fix camera config to allow video stream to render back camera on Android.
+
 ## 1.6.0 - 2025-06-30
 
 ### Added
