@@ -218,10 +218,12 @@ export default {
       const portraitAspectRatio = parseFloat((height / width).toFixed(3));
       return {
         videoConstraints: {
-          aspectRatio: width < height ?
-            portraitAspectRatio :
-            landscapeAspectRatio
           facingMode: 'environment',
+          aspectRatio: $q.platform.is.desktop ?
+            landscapeAspectRatio :
+            width < height ?
+              portraitAspectRatio :
+              landscapeAspectRatio
         },
         ...(props.showQrBox && {qrbox: qrboxFunction})
       };
