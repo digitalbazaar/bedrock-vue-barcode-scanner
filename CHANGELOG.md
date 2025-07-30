@@ -1,5 +1,10 @@
 # bedrock-vue-barcode-scanner ChangeLog
 
+## 1.6.2 - 2025-07-dd
+
+### Fixed
+- Fix camera config to allow video stream to render webcam.
+
 ## 1.6.1 - 2025-07-02
 
 ### Fixed
