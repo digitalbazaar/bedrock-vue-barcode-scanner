@@ -279,7 +279,7 @@ export default {
     // desktop is never considered for portrait mode
     function _isPortrait() {
       const isDesktop = $q.platform.is.desktop;
-      return window.matchMedia('(orientation: portrait)').matches && !isDesktop;
+      return !isDesktop && window.matchMedia('(orientation: portrait)').matches;
     }
 
     return {
