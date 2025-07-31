@@ -78,12 +78,9 @@ export default {
     const aspectRatio = computed(() => {
       const width = window.innerWidth;
       const height = window.innerHeight;
-      const isDesktop = !$q.platform.is.desktop;
       // must parse float aspect ratio value
       return parseFloat(
-        // format aspectRatio to landscape for desktop
-        _isPortrait() && !isDesktop ?
-          height / width : width / height).toFixed(3);
+        _isPortrait() ? height / width : width / height).toFixed(3);
     });
 
     // Lifecycle hooks
@@ -279,8 +276,10 @@ export default {
       );
     }
 
+    // desktop is never considered for portrait mode
     function _isPortrait() {
-      return window.matchMedia('(orientation: portrait)').matches;
+      const isDesktop = $q.platform.is.desktop;
+      return window.matchMedia('(orientation: portrait)').matches && !isDesktop;
     }
 
     return {
