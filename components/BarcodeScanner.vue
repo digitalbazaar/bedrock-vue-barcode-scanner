@@ -17,9 +17,9 @@
 /*!
  * Copyright (c) 2024-2025 Digital Bazaar, Inc. All rights reserved.
  */
+import {computed, inject, onMounted, onUnmounted, reactive, ref} from 'vue';
 import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats}
   from 'html5-qrcode';
-import {inject, onMounted, onUnmounted, reactive, ref} from 'vue';
 import {detectBarcodes} from '../lib/barcodes.js';
 import ScannerUI from './ScannerUI.vue';
 import {useQuasar} from 'quasar';
@@ -73,6 +73,18 @@ export default {
 
     // Inject
     const {selectedCameraId, updateSelectedCamera} = inject('selectedCameraId');
+
+    // determine aspect ratio based on portrait/landscape orientation
+    const aspectRatio = computed(() => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const isDesktop = !$q.platform.is.desktop;
+      // must parse float aspect ratio value
+      return parseFloat(
+        // format aspectRatio to landscape for desktop
+        _isPortrait() && !isDesktop ?
+          height / width : width / height).toFixed(3);
+    });
 
     // Lifecycle hooks
     onMounted(async () => {
@@ -211,19 +223,15 @@ export default {
     }
 
     function getCameraScanConfig() {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      // must parse float aspect ratio value
-      const landscapeAspectRatio = parseFloat((width / height).toFixed(3));
-      const portraitAspectRatio = parseFloat((height / width).toFixed(3));
       return {
+        /**
+         * When facingMode is set an object with the property `exact`
+         * an OverconstrainedError is thrown. If the facingMode value is
+         * completely removed, the front camera is selected on iOS.
+         */
         videoConstraints: {
           facingMode: 'environment',
-          aspectRatio: $q.platform.is.desktop ?
-            landscapeAspectRatio :
-            width < height ?
-              portraitAspectRatio :
-              landscapeAspectRatio
+          aspectRatio: aspectRatio.value,
         },
         ...(props.showQrBox && {qrbox: qrboxFunction})
       };
@@ -269,6 +277,10 @@ export default {
       updateSelectedCamera(
         cameraList.value.find(c => c.deviceId === deviceId).deviceId
       );
+    }
+
+    function _isPortrait() {
+      return window.matchMedia('(orientation: portrait)').matches;
     }
 
     return {
