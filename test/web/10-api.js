@@ -10,7 +10,9 @@ describe('QR Codes', function() {
   // check if BarcodeDetector is supported
   const {BarcodeDetector} = globalThis;
   if(!BarcodeDetector) {
-    throw new Error('Barcode Detector is not supported.');
+    console.warning('Barcode Detector is not supported.');
+    this.skip();
+    return;
   }
   const barcodeType = 'qr_code';
   const formats = [barcodeType];
@@ -47,7 +49,9 @@ describe.only('PDF417', function() {
   // check if BarcodeDetector is supported
   const {BarcodeDetector} = globalThis;
   if(!BarcodeDetector) {
-    throw new Error('Barcode Detector is not supported.');
+    console.warning('Barcode Detector is not supported.');
+    this.skip();
+    return;
   }
   const barcodeType = 'pdf417';
   const formats = [barcodeType];
