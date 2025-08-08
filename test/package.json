@@ -26,6 +26,7 @@
     "@vuelidate/core": "^2.0.3",
     "@vuelidate/validators": "^2.0.4",
     "@vueuse/core": "^10.9.0",
+    "barcode-detector": "^3.0.5",
     "vue": "^3.4.21",
     "vue-router": "^4.3.0"
   }
