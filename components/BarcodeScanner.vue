@@ -1,32 +1,31 @@
 <template>
-  <div ref="videoContainer">
-    <ScannerUI
-      :tip-text="tipText"
-      :camera-list="cameraList"
-      :camera-error="cameraError"
-      :loading-camera="loadingCamera"
-      :camera-constraints="cameraConstraints"
-      @zoom-update="onZoomChange"
-      @close="handleClose"
-      @toggle-torch="toggleTorch"
-      @update-camera="updateCamera" />
-  </div>
+  <ScannerUI
+    :tip-text="tipText"
+    :camera-list="cameraList"
+    :camera-error="cameraError"
+    :capabilities="capabilities"
+    :loading-camera="loadingCamera"
+    :camera-constraints="cameraConstraints"
+    @close="handleClose"
+    @toggle-torch="toggleTorch"
+    @update-camera="onCameraChange"
+    @zoom-update="onZoomChange" />
 </template>
 
 <script>
 /*!
  * Copyright (c) 2024-2025 Digital Bazaar, Inc. All rights reserved.
  */
-import {computed, inject, onMounted, onUnmounted, reactive, ref} from 'vue';
-import {Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats}
-  from 'html5-qrcode';
+import {onBeforeUnmount, onMounted, reactive, ref} from 'vue';
+import {BarcodeDetector} from 'barcode-detector/ponyfill';
 import {detectBarcodes} from '../lib/barcodes.js';
 import ScannerUI from './ScannerUI.vue';
-import {useQuasar} from 'quasar';
 
 export default {
   name: 'BarcodeScanner',
-  components: {ScannerUI},
+  components: {
+    ScannerUI
+  },
   props: {
     formatsToSupport: {
       type: Array,
@@ -47,126 +46,87 @@ export default {
   },
   emits: ['result', 'close'],
   setup(props, {emit}) {
-    // Props
-    const {formatsToSupport} = props;
+    // constants
+    let abortController = new AbortController();
 
-    // Constants
-    let scanner = null;
-    const abortController = new AbortController();
-
-    // Refs
+    // refs
+    let stream = null;
+    const video = ref(null);
+    const running = ref(false);
     const cameraList = ref([]);
     const cameraError = ref(null);
-    const cameraLight = ref(false);
-    const loadingCamera = ref(true);
-    const videoContainer = ref(null);
+    const cameraTorch = ref(false);
+    const loadingCamera = ref(false);
     const cameraConstraints = reactive({
-      zoom: {
-        min: 1,
-        max: 8,
-        step: 1
-      }
+      zoom: {min: 1, max: 8, step: 1}
+    });
+    const capabilities = reactive({
+      zoom: false, torch: false
     });
 
-    // use functions
-    const $q = useQuasar();
+    // start camera on mount
+    onMounted(async () => startCamera());
 
-    // Inject
-    const {selectedCameraId, updateSelectedCamera} = inject('selectedCameraId');
+    // stop camera on unmount
+    onBeforeUnmount(() => stopCamera());
 
-    // determine aspect ratio based on portrait/landscape orientation
-    const aspectRatio = computed(() => {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      // must parse float aspect ratio value
-      return parseFloat(
-        _isPortrait() ? height / width : width / height).toFixed(3);
-    });
-
-    // Lifecycle hooks
-    onMounted(async () => {
-      // map formats from Web standard to `Html5QrcodeSupportedFormats`
-      scanner = new Html5Qrcode(
-        'dce-video-container', {
-          fps: 30,
-          formatsToSupport: _mapFormats(formatsToSupport),
-          useBarCodeDetectorIfSupported: true,
-        }
-      );
-      const availableCameras = await Html5Qrcode.getCameras();
-      cameraList.value = availableCameras.map(c => {
-        return {deviceId: c.id, label: c.label};
-      });
-      // Attempt to default to a back-facing, non-fish-eye camera
-      // Most often this is the last one in the list of back cameras
-      const backCameras = cameraList.value
-        .filter(camera => camera.label?.toLowerCase().includes('back'));
-      const defaultCameraId =
-        backCameras.at(-1)?.deviceId ?? cameraList.value.at(-1)?.deviceId;
-      await scanner.start(
-        {deviceId: {exact: selectedCameraId.value ?? defaultCameraId}},
-        getCameraScanConfig(),
-        onScanSuccess,
-        onError);
-      if(!selectedCameraId.value && cameraList.value.length) {
-        const selectedCamera = scanner.getRunningTrackSettings()?.deviceId;
-        updateSelectedCamera(selectedCamera);
+    async function startCamera({constraints} = {}) {
+      if(running.value) {
+        stopCamera();
       }
-      // initialize torch state to `torchOn` prop value
-      if(cameraLight.value !== props.torchOn) {
-        await toggleTorch();
+      loadingCamera.value = true;
+      cameraError.value = false;
+      running.value = true;
+      try {
+        await startVideoStream({constraints});
+        getCapabilities();
+        await getCameraList(); // call after startVideoStream for permissions
+        startBarcodeDetection();
+      } catch(err) {
+        console.error('Could not start camera:', err);
+        running.value = false;
+        cameraError.value = true;
+      } finally {
+        loadingCamera.value = false;
       }
-      await getZoomConstraints();
-      // Set focus mode
-      await scanner.applyVideoConstraints({
-        advanced: [
-          {frameRate: 30},
-          {resizeMode: 'none'},
-          {focusMode: 'continuous'},
-        ],
-      });
-      // Start scanner at zoom level 2 for iOS
-      if($q.platform.is.ios) {
-        onZoomChange(2);
-      }
-      // Use Barcode Detection API
-      startBarcodeDetection();
-      loadingCamera.value = false;
-    });
-
-    onUnmounted(async () => {
-      if(scanner) {
-        const scannerState = await scanner.getState();
-        if(scannerState == Html5QrcodeScannerState.SCANNING) {
-          await scanner.stop();
-        }
-      }
-    });
-
-    // Helper functions
-    function handleClose() {
-      emit('close');
-      abortController.abort();
     }
 
-    // Toggle camera light on and off
-    async function toggleTorch() {
-      cameraLight.value = !cameraLight.value;
-      scanner.applyVideoConstraints({
-        advanced: [{torch: cameraLight.value}],
+    async function startVideoStream({constraints} = {}) {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: 'environment',
+          width: {ideal: 1280},
+          height: {ideal: 720}
+        },
+        ...constraints
+      });
+      const videoElement = document.querySelector('#video-container > video');
+      video.value = videoElement;
+      video.value.srcObject = stream;
+      // wait until metadata is loaded
+      await new Promise(res => {
+        video.value.onloadedmetadata = () => res();
       });
     }
 
-    // Extract phone's zoom constraints
-    async function getZoomConstraints() {
-      const video = document.querySelector(`#dce-video-container > video`);
-      const videoTracks = await video.srcObject.getVideoTracks();
-      const {max = 8, min = 1, step = 1} =
-        videoTracks[0]?.getCapabilities().zoom ?? {};
-      // Save constraints to state
-      cameraConstraints.zoom.min = min;
-      cameraConstraints.zoom.max = max;
-      cameraConstraints.zoom.step = step;
+    async function getCameraList() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        cameraList.value = devices.reduce((all, device) => {
+          const isVideoInput = device.kind === 'videoinput';
+          return isVideoInput ? [...all, device] : all;
+        }, []);
+      } catch(err) {
+        console.error('Unable to get camera list', err);
+        cameraList.value = [];
+      }
+    }
+
+    function startBarcodeDetection() {
+      const {formatsToSupport: formats} = props;
+      const barcodeDetector = new BarcodeDetector({formats});
+      emitScanResult({barcodeDetector, video: video.value});
     }
 
     async function emitScanResult({barcodeDetector, video}) {
@@ -184,153 +144,84 @@ export default {
       }
     }
 
-    function startBarcodeDetection() {
-      // get video element
-      const video = document.querySelector(
-        '#dce-video-container > video');
-      const {BarcodeDetector} = globalThis;
-      // check if BarcodeDetector is supported
-      if(!BarcodeDetector) {
-        alert('Barcode Detector is not supported in this browser.');
-        return;
-      }
-      const barcodeDetector = new BarcodeDetector({
-        formats: formatsToSupport
-      });
-      // emit the first scanned result
-      emitScanResult({barcodeDetector, video});
-    }
-
-    // Update camera zoom
-    async function onZoomChange(updatedValue) {
-      scanner.applyVideoConstraints({
-        advanced: [{zoom: updatedValue}],
-      });
-    }
-
-    // use Barcode Detection API instead of html5qrcode's logic
-    function onScanSuccess() {
-      return;
-    }
-
-    function onError(error) {
-      if(!String(error).startsWith('QR code parse error')) {
-        console.error('BarcodeScanner error:', error);
-      }
-    }
-
-    function getCameraScanConfig() {
-      return {
-        /**
-         * When facingMode is set an object with the property `exact`
-         * an OverconstrainedError is thrown. If the facingMode value is
-         * completely removed, the front camera is selected on iOS.
-         */
-        videoConstraints: {
-          facingMode: 'environment',
-          aspectRatio: aspectRatio.value,
-        },
-        ...(props.showQrBox && {qrbox: qrboxFunction})
-      };
-    }
-
-    /**
-     * A function that takes in the width and height of the video stream
-     * and returns QrDimensions. Viewfinder refers to the video showing
-     * camera stream.
-     *
-     * @param {number} viewfinderWidth - Video screen width.
-     * @param {number} viewfinderHeight - Video screen height.
-     * @returns {object} QR box width and height.
-     */
-    function qrboxFunction(viewfinderWidth, viewfinderHeight) {
-      const minEdgePercentage = 0.75; // 75%
-      const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-      const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
-      return {
-        width: qrboxSize,
-        height: qrboxSize
-      };
-    }
-
-    async function updateCamera(deviceId) {
-      if(!scanner || selectedCameraId.value === deviceId) {
-        return;
-      }
-      const scannerState = await scanner.getState();
-      if(scannerState == Html5QrcodeScannerState.SCANNING) {
-        try {
-          await scanner.stop();
-        } catch(e) {
-          console.error(e);
+    async function onCameraChange(deviceId) {
+      const constraints = {
+        video: {
+          deviceId: {exact: deviceId},
+          width: {ideal: 1280},
+          height: {ideal: 720}
         }
-      }
-      await scanner.start(
-        deviceId,
-        getCameraScanConfig(),
-        onScanSuccess,
-        onError
-      );
-      updateSelectedCamera(
-        cameraList.value.find(c => c.deviceId === deviceId).deviceId
-      );
+      };
+      await startCamera({constraints});
     }
 
-    // desktop is never considered for portrait mode
-    function _isPortrait() {
-      const isDesktop = $q.platform.is.desktop;
-      return !isDesktop && window.matchMedia('(orientation: portrait)').matches;
+    function stopCamera() {
+      abortController.abort();
+      abortController = new AbortController();
+      running.value = false;
+      if(stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+      }
+    }
+
+    // Helper functions
+    function handleClose() {
+      stopCamera();
+      emit('close');
+    }
+
+    function getCapabilities() {
+      if(!stream) {
+        return;
+      }
+      const track = stream.getVideoTracks()[0];
+      const {zoom, torch} = track.getCapabilities();
+      capabilities.zoom = !!zoom;
+      capabilities.torch = !!torch;
+      if(zoom) {
+        const {max = 8, min = 1, step = 1} = zoom;
+        // Save constraints to state
+        cameraConstraints.zoom.min = min;
+        cameraConstraints.zoom.max = max;
+        cameraConstraints.zoom.step = step;
+      }
+    }
+
+    function toggleTorch() {
+      if(!stream) {
+        return;
+      }
+      const track = stream.getVideoTracks()[0];
+      cameraTorch.value = !cameraTorch.value;
+      const constraints = {advanced: [{torch: cameraTorch.value}]};
+      track.applyConstraints(constraints)
+        .catch(err => console.error('Torch error:', err));
+    }
+
+    async function onZoomChange(updatedValue) {
+      if(!stream) {
+        return;
+      }
+      const track = stream.getVideoTracks()[0];
+      const constraints = {advanced: [{zoom: updatedValue}]};
+      track.applyConstraints(constraints)
+        .catch(err => console.error('Zoom error:', err));
     }
 
     return {
-      emit,
       cameraList,
       cameraError,
       toggleTorch,
       handleClose,
+      capabilities,
       onZoomChange,
-      updateCamera,
       loadingCamera,
-      videoContainer,
+      onCameraChange,
       cameraConstraints,
     };
   }
 };
-
-// see: `BarcodeFormat`
-// https://wicg.github.io/shape-detection-api/#enumdef-barcodeformat
-const FORMAT_MAP = new Map([
-  ['aztec', Html5QrcodeSupportedFormats.AZTEC],
-  ['code_128', Html5QrcodeSupportedFormats.CODE_128],
-  ['code_39', Html5QrcodeSupportedFormats.CODE_39],
-  ['code_93', Html5QrcodeSupportedFormats.CODE_93],
-  ['codabar', Html5QrcodeSupportedFormats.CODABAR],
-  ['data_matrix', Html5QrcodeSupportedFormats.DATA_MATRIX],
-  ['ean_13', Html5QrcodeSupportedFormats.EAN_13],
-  ['ean_8', Html5QrcodeSupportedFormats.EAN_8],
-  ['itf', Html5QrcodeSupportedFormats.ITF],
-  ['pdf417', Html5QrcodeSupportedFormats.PDF_417],
-  ['qr_code', Html5QrcodeSupportedFormats.QR_CODE],
-  ['upc_a', Html5QrcodeSupportedFormats.UPC_A],
-  ['upc_e', Html5QrcodeSupportedFormats.UPC_E],
-]);
-
-// map from Web-native format to `Html5QrcodeSupportedFormats`
-export function _mapFormats(formats) {
-  return formats.map(format => {
-    const result = FORMAT_MAP.get(format);
-    if(result === undefined) {
-      if(typeof result !== 'string' || !isNaN(Number.parseInt(result, 10))) {
-        throw new TypeError(
-          `Unsupported format "${format}"; ` +
-          'a string supported by the "BarcodeFormat" enumeration ' +
-          'must be given, e.g., "qr_code", not a number.');
-      }
-      throw new TypeError(`Unsupported format "${format}".`);
-    }
-    return result;
-  });
-}
 </script>
 
 <style>
