@@ -1,5 +1,15 @@
 <template>
   <div class="fixed-full bg-black">
+    <!-- Video Stream -->
+    <div
+      id="video-container"
+      class="video-container">
+      <video
+        muted
+        autoplay
+        playsinline />
+    </div>
+
     <!-- Loading -->
     <div
       v-if="loadingCamera"
@@ -14,24 +24,13 @@
         color="white" />
     </div>
 
-    <!-- Video Stream -->
-    <div
-      id="dce-video-container"
-      class="dce-video-container" />
-
     <!-- Camera Error -->
     <div
       v-if="cameraError"
-      class="absolute-top text-center q-mt-xl">
-      <div class="row items-center justify-center">
-        <q-icon
-          color="red-12"
-          name="fas fa-times"
-          class="icon q-pa-lg" />
-      </div>
+      class="absolute-center full-width text-center">
       <div
-        class="q-mt-md"
-        style="max-width: 250px">
+        class="text-white text-h5 q-mx-auto"
+        style="max-width: 350px;">
         There was an error loading your camera. Please refresh the page.
       </div>
     </div>
@@ -43,12 +42,15 @@
       :ripple="false"
       size="16px"
       icon="fas fa-times"
-      :color="cameraError ? 'primary' : 'white'"
+      :color="cameraError ? 'red-12' : 'white'"
       class="q-ma-sm absolute-top-right close-button"
       @click="handleClose" />
 
     <!-- Zoom slider -->
-    <q-item class="absolute-bottom q-mx-xl zoom-slider">
+    <q-item
+      v-if="!cameraError"
+      v-show="!loadingCamera"
+      class="absolute-bottom q-mx-xl zoom-slider">
       <q-item-section side>
         <q-icon
           color="white"
@@ -61,7 +63,8 @@
           track-color="white"
           :min="cameraConstraints.zoom.min"
           :max="cameraConstraints.zoom.max"
-          :step="cameraConstraints.zoom.step" />
+          :step="cameraConstraints.zoom.step"
+          @change="onZoomChange" />
       </q-item-section>
       <q-item-section side>
         <q-icon
@@ -72,7 +75,8 @@
 
     <!-- Tip Text -->
     <div
-      v-if="tipText"
+      v-if="tipText && !cameraError"
+      v-show="!loadingCamera"
       ref="tipText"
       class="absolute-bottom tip-text text-white
       text-center full-width q-py-sm">
@@ -80,7 +84,10 @@
     </div>
 
     <!-- Bottom buttons -->
-    <div class="full-width absolute-bottom bottom-container">
+    <div
+      v-if="!cameraError"
+      v-show="!loadingCamera"
+      class="full-width absolute-bottom bottom-container">
       <q-btn-group
         spread
         class="button-group full-width shadow-0">
@@ -107,12 +114,14 @@
           </q-list>
         </q-btn-dropdown>
         <q-separator
+          v-show="capabilities.torch"
           inset
           vertical
           color="grey-8" />
 
         <!-- Torch -->
         <q-btn
+          v-show="!loadingCamera && capabilities.torch"
           flat
           no-caps
           color="white"
@@ -131,8 +140,7 @@
 /*!
  * Copyright (c) 2024-2025 Digital Bazaar, Inc. All rights reserved.
  */
-import {ref, watch} from 'vue';
-import {useQuasar} from 'quasar';
+import {ref} from 'vue';
 
 export default {
   name: 'ScannerUI',
@@ -153,6 +161,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    capabilities: {
+      type: Object,
+      default: () => ({zoom: false, torch: false})
+    },
     cameraConstraints: {
       type: Object,
       default: () => ({
@@ -166,19 +178,15 @@ export default {
   },
   emits: ['close', 'updateCamera', 'upload', 'toggle-torch', 'zoom-update'],
   setup(_, {emit}) {
-    // use functions
-    const $q = useQuasar();
+    const zoom = ref(1);
 
-    // start scanner at zoom level 2 for iOS
-    const zoom = ref($q.platform.is.ios ? 2 : 1);
-
-    watch(zoom, updatedValue => {
-      emit('zoom-update', updatedValue);
-    });
-
-    const onChangeCamera = async camera => {
+    async function onChangeCamera(camera) {
       emit('updateCamera', camera.deviceId);
-    };
+    }
+
+    async function onZoomChange(updatedValue) {
+      emit('zoom-update', updatedValue);
+    }
 
     function handleClose() {
       emit('close');
@@ -191,6 +199,7 @@ export default {
     return {
       zoom,
       handleClose,
+      onZoomChange,
       onChangeCamera,
       handleToggleTorch,
     };
@@ -209,7 +218,7 @@ export default {
   display: flex;
   border-radius: 0;
   justify-content: flex-start;
-  background-color: rgba(31, 41, 55, 0.9);
+  background-color: #1F2937;
   height: calc(env(safe-area-inset-bottom, 0px) + 70px);
 }
 .button-group {
@@ -220,5 +229,21 @@ export default {
 }
 .zoom-slider {
   margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
+}
+.video-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: column;
+}
+video {
+  width: 100%; /* prevents distorting aspect ratio */
+  height: auto; /* prevents distorting aspect ratio */
+  object-fit: contain; /* prevents distorting aspect ratio */
+  background: black;
 }
 </style>
