@@ -20,3 +20,15 @@ config.karma.config.webpack.resolve = {
     path.resolve(__dirname, 'node_modules')
   ]
 };
+config.karma.config.files.push({
+  pattern: 'images/qr_code/**/*.*',
+  included: false,
+  served: true,
+  watched: false
+});
+config.karma.config.files.push({
+  pattern: 'images/pdf417/**/*.*',
+  included: false,
+  served: true,
+  watched: false
+});
