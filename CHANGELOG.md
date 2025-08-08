@@ -1,5 +1,16 @@
 # bedrock-vue-barcode-scanner ChangeLog
 
+## 1.7.0 - 2025-08-dd
+
+### Added
+- Installed `barcode-detector@3.0.5` and updated business logic.
+
+### Changed
+- Updated scanner UI.
+
+### Removed
+- Removed dependency `html5-qrcode@2.3.8`.
+
 ## 1.6.2 - 2025-07-31
 
 ### Fixed
